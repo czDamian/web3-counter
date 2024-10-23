@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { client } from "@/client";
 import { getContract, prepareContractCall } from "thirdweb";
 import { avalancheFuji } from "thirdweb/chains";
@@ -9,7 +8,6 @@ import {
   useActiveAccount,
   useWalletBalance,
   useReadContract,
-  useSendTransaction,
   TransactionButton,
 } from "thirdweb/react";
 
@@ -20,7 +18,8 @@ const contract = getContract({
 });
 
 const TotalCount = () => {
-  const { data, isLoading } = useReadContract({
+  //loading state removed
+  const { data } = useReadContract({
     contract,
     method: "function totalCount() public view returns (uint256)",
     params: [], // type safe params
@@ -89,7 +88,7 @@ export default function Home() {
   const account = useActiveAccount();
   console.log("account", account);
 
-  const { data: balance, isLoading } = useWalletBalance({
+  const { data: balance } = useWalletBalance({
     client,
     chain: avalancheFuji,
     address: account?.address,
