@@ -1,7 +1,13 @@
 "use client";
 
 import { client } from "@/client";
-import { getContract, prepareContractCall } from "thirdweb";
+import { useState } from "react";
+import {
+  getContract,
+  prepareContractCall,
+  prepareTransaction,
+  toWei,
+} from "thirdweb";
 import { avalancheFuji } from "thirdweb/chains";
 import {
   ConnectButton,
@@ -26,9 +32,9 @@ const TotalCount = () => {
   });
   console.log("data", data);
   return (
-    <div>
+    <div className="text-center">
       <p>Total Count </p>
-      <p className="text-6xl text-green-500"> {data ? Number(data) : "00"}</p>
+      <p className="text-6xl text-blue-500"> {data ? Number(data) : "0"}</p>
     </div>
   );
 };
@@ -36,6 +42,7 @@ const TotalCount = () => {
 const Increment = () => {
   return (
     <TransactionButton
+      onClick={() => console.log("sending transaction")}
       transaction={() => {
         // Create a transaction object and return it
         const tx = prepareContractCall({
@@ -61,6 +68,7 @@ const Increment = () => {
 const Decrement = () => {
   return (
     <TransactionButton
+      onClick={() => console.log("sending transaction")}
       transaction={() => {
         // Create a transaction object and return it
         const tx = prepareContractCall({
@@ -84,17 +92,100 @@ const Decrement = () => {
   );
 };
 
+const SendMoney = () => {
+  const [toAddress, setToAddress] = useState("");
+  const [value, setValue] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [status, setStatus] = useState("");
+  const [txHash, setTxHash] = useState("");
+
+  return (
+    <div className="p-4">
+      <div className="text-xs mb-4">
+        {error && <div className="text-red-500">{error}</div>}
+        {success && (
+          <div className="text-blue-500">
+            {success}
+            {txHash && (
+              <a
+                href={`https://testnet.snowtrace.io/tx/${txHash}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-500 underline">
+                View details
+              </a>
+            )}
+          </div>
+        )}
+        {status && <div className="text-white">{status}</div>}
+      </div>
+      <div className="mb-4">
+        <label className="block mb-2">To Address:</label>
+        <input
+          type="text"
+          value={toAddress}
+          onChange={(e) => setToAddress(e.target.value)}
+          placeholder="Recipient address"
+          className="w-full p-2 border rounded text-black"
+        />
+      </div>
+      <div className="mb-4">
+        <label className="block mb-2">Amount (in AVAX):</label>
+        <input
+          type="number"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          placeholder="Amount to send"
+          className="w-full p-2 border rounded text-black"
+        />
+      </div>
+      <TransactionButton
+        onClick={() => {
+          setError(""); // Clear previous errors
+          setSuccess(""); // Clear previous success messages
+          setStatus("sending transaction...");
+          console.log("sending transaction");
+        }}
+        transaction={() => {
+          // Create a transaction object and return it
+          const tx = prepareTransaction({
+            to: toAddress,
+            value: toWei(value),
+            chain: avalancheFuji,
+            client,
+          });
+          return tx;
+        }}
+        onTransactionSent={(result) => {
+          setStatus("Transaction submitted. Awaiting confirmation...");
+          console.log("Transaction submitted", result.transactionHash);
+          setTxHash(result.transactionHash);
+        }}
+        onTransactionConfirmed={(receipt) => {
+          setStatus("");
+          setSuccess("Transaction successful! ");
+          console.log("Transaction confirmed", receipt.transactionHash);
+        }}
+        onError={(error) => {
+          setStatus("");
+          setError(`Transaction failed!, ${error.message}`);
+          console.error("Transaction error:", error);
+        }}>
+        Transfer
+      </TransactionButton>
+    </div>
+  );
+};
+
 export default function Home() {
   const account = useActiveAccount();
-  console.log("account", account);
 
   const { data: balance } = useWalletBalance({
     client,
     chain: avalancheFuji,
     address: account?.address,
   });
-
-  console.log("balance", balance);
 
   return (
     <div className="flex flex-col gap-8 items-center justify-center my-8 md:my-12 p-8 md:p-16 font-[family-name:var(--font-geist-sans)]">
@@ -110,6 +201,7 @@ export default function Home() {
         <Increment />
         <Decrement />
       </div>
+      <SendMoney />
     </div>
   );
 }
