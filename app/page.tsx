@@ -34,7 +34,7 @@ const TotalCount = () => {
   return (
     <div className="text-center">
       <p>Total Count </p>
-      <p className="text-6xl text-blue-500"> {data ? Number(data) : "0"}</p>
+      <p className="text-6xl my-4 text-blue-500"> {data ? Number(data) : "0"}</p>
     </div>
   );
 };
@@ -101,7 +101,8 @@ const SendMoney = () => {
   const [txHash, setTxHash] = useState("");
 
   return (
-    <div className="p-4">
+    <div className="p-8 rounded-lg shadow-lg bg-neutral-900">
+      <h1 className="font-bold text-lg">Tranfer AVAX token to a friend</h1>
       <div className="text-xs mb-4">
         {error && <div className="text-red-500">{error}</div>}
         {success && (
@@ -131,7 +132,7 @@ const SendMoney = () => {
         />
       </div>
       <div className="mb-4">
-        <label className="block mb-2">Amount (in AVAX):</label>
+        <label className="block mb-2">Amount (AVAX):</label>
         <input
           type="number"
           value={value}
@@ -140,40 +141,42 @@ const SendMoney = () => {
           className="w-full p-2 border rounded text-black"
         />
       </div>
-      <TransactionButton
-        onClick={() => {
-          setError(""); // Clear previous errors
-          setSuccess(""); // Clear previous success messages
-          setStatus("sending transaction...");
-          console.log("sending transaction");
-        }}
-        transaction={() => {
-          // Create a transaction object and return it
-          const tx = prepareTransaction({
-            to: toAddress,
-            value: toWei(value),
-            chain: avalancheFuji,
-            client,
-          });
-          return tx;
-        }}
-        onTransactionSent={(result) => {
-          setStatus("Transaction submitted. Awaiting confirmation...");
-          console.log("Transaction submitted", result.transactionHash);
-          setTxHash(result.transactionHash);
-        }}
-        onTransactionConfirmed={(receipt) => {
-          setStatus("");
-          setSuccess("Transaction successful! ");
-          console.log("Transaction confirmed", receipt.transactionHash);
-        }}
-        onError={(error) => {
-          setStatus("");
-          setError(`Transaction failed!, ${error.message}`);
-          console.error("Transaction error:", error);
-        }}>
-        Transfer
-      </TransactionButton>
+      <div className="text-center pt-4">
+        <TransactionButton
+          onClick={() => {
+            setError(""); // Clear previous errors
+            setSuccess(""); // Clear previous success messages
+            setStatus("sending transaction...");
+            console.log("sending transaction");
+          }}
+          transaction={() => {
+            // Create a transaction object and return it
+            const tx = prepareTransaction({
+              to: toAddress,
+              value: toWei(value),
+              chain: avalancheFuji,
+              client,
+            });
+            return tx;
+          }}
+          onTransactionSent={(result) => {
+            setStatus("Transaction submitted. Awaiting confirmation...");
+            console.log("Transaction submitted", result.transactionHash);
+            setTxHash(result.transactionHash);
+          }}
+          onTransactionConfirmed={(receipt) => {
+            setStatus("");
+            setSuccess("Transaction successful! ");
+            console.log("Transaction confirmed", receipt.transactionHash);
+          }}
+          onError={(error) => {
+            setStatus("");
+            setError(`Transaction failed!, ${error.message}`);
+            console.error("Transaction error:", error);
+          }}>
+          Transfer
+        </TransactionButton>
+      </div>
     </div>
   );
 };
@@ -196,10 +199,12 @@ export default function Home() {
           Balance: {balance?.displayValue} {balance?.symbol}
         </p>
       </div>
-      <TotalCount />
-      <div className="flex flex-row gap-2 items-center justify-center">
-        <Increment />
-        <Decrement />
+      <div className="p-8 rounded-lg shadow-lg bg-neutral-900">
+        <TotalCount />
+        <div className="flex flex-row gap-2 items-center justify-center">
+          <Increment />
+          <Decrement />
+        </div>
       </div>
       <SendMoney />
     </div>
